@@ -1,0 +1,21 @@
+var tempMarker = new google.maps.Marker(
+                    {
+                        position: uavLatLng,
+                        map: m_map,
+                        clickable: false,
+                        zIndex: 500,
+                        icon: getQuadIconPNG(0),
+                        label: {
+                            text: name,
+                            fontFamily: 'Roboto, Arial, sans-serif',
+                            fontSize: "20px",
+                            color: "red",
+                            backgroundColor: "#424242",
+                            borderRadius: 10,
+                            padding: 10,
+                            backgroundStrokeColor: '#01579B',
+                            backgroundStrokeWeight: 3,
+                            labelOrigin: new google.maps.Point(38, 76)
+                        }//,
+                        //labelAnchor: new google.maps.Point(38, 76)
+                    });

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<select id="uavList">
+  <option>UAV-1</option>
+  <option>UAV-2</option>
+  <option>UAV-3</option>
+</select>
+
+<button onclick="addInCurrent()">Add a point</button>
+<button onclick="removeFromCurrent()">Remove a point</button>
+<button onclick="showAllFP()">Show all</button>
+
+<script>
+var currentUAV = "";
+var currentUserFP = [];
+var userFPList = [];
+
+var uavListEle = document.getElementById("uavList");
+
+function addInCurrent() {
+    console.log("add point In "+currentUAV+"'s FlighPlan");
+    currentUserFP.push(currentUserFP.length);
+}
+
+function removeFromCurrent() {
+    console.log("remove From "+currentUAV+"'s FlighPlan");
+    currentUserFP.pop();
+}
+
+function showAllFP() {
+	var plan = "[";
+    for(var i=0; i<userFPList.length; i++) {
+    	plan += userFPList[i].uavName+" = ";
+        var fp = userFPList[i].flightplan;
+    	
+        for(var j=0; j<fp.length; j++)
+    		plan += ("("+j+", "+fp[j]+")");
+           
+        plan += "][";
+    }
+   
+    console.log(plan);
+}
+
+function activeUAVChanged(name) {
+		currentUAV = name;
+		console.log("selected UAV = "+currentUAV);
+        
+        var fpNotFound = true;
+        for(var i=0; i<userFPList.length; i++) {
+        	if(currentUAV === userFPList[i].uavName) {
+            	fpNotFound = false;
+        		currentUserFP = userFPList[i].flightplan;
+            }
+        }
+        
+        if(fpNotFound) {
+        	currentUserFP = [];
+        	userFPList.push({uavName:currentUAV, 
+            					flightplan: currentUserFP});
+        }
+        
+        if(currentUserFP.length < 1) {
+        	fillHome(currentUserFP);
+        }        
+}
+
+function fillHome(arr) {
+	arr.push(0);
+    arr.push(255);
+}
+
+uavListEle.onchange = function() {
+	activeUAVChanged(uavListEle.options[uavListEle.selectedIndex].text);
+}
+
+window.onload = function() {
+    uavListEle.selectedIndex = 1;
+    var name = uavListEle.options[uavListEle.selectedIndex].text;
+    activeUAVChanged(name);
+}
+</script>
+
+</body>
+</html>

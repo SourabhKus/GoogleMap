@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+
+<div id="map" style="width:100%;height:500px"></div>
+
+<script>
+
+function quadBearingIcon(bearing) {
+    var quadBearing = {
+            path: "M193 776 c-64 -21 -110 -54 -142 -99 -38 -58\
+            -51 -100 -51 -171 1 -131 93 -242 219 -262 40 -6 41\
+            -8 41 -46 l0 -39 -35 7 c-19 3 -35 3 -35 0 0 -11 81\
+            -168 84 -165 2 2 23 42 46 88 l42 84 -36 -6 -36 -6 0\
+            40 c0 34 3 39 23 39 39 0 121 46 160 90 53 57 70 103\
+            71 181 1 147 -105 262 -251 274 -35 3 -75 -1 -100 -9z\
+            m132 -47 c110 -28 188 -151 164 -259 -23 -102 -99 -169\
+            -203 -177 -83 -7 -157 31 -200 100 -83 134 -14 300 139\
+            338 44 10 52 10 100 -2z",
+            fillColor: "#407CC0",
+            fillOpacity: 1.0,
+            scale: 0.08,
+            strokeColor: "#00FF4F",
+            rotation: bearing,
+            strokeWeight: 1,
+            anchor: new google.maps.Point(280, 520)
+        };
+
+        return quadBearing;
+}
+
+function myMap() {
+  var myCenter = new google.maps.LatLng(51.508742,-0.120850);
+  var mapCanvas = document.getElementById("map");
+  var mapOptions = {center: myCenter, zoom: 5};
+  var map = new google.maps.Map(mapCanvas, mapOptions);
+  var marker = new google.maps.Marker({
+                                                     position: myCenter,
+                                                     map: map,
+                                                     clickable: false,
+                                                     zIndex: 500,
+                                                     icon: quadBearingIcon(0)
+                                                 });
+                                                 
+   var marker1 = new google.maps.Marker({
+                                                     position: myCenter,
+                                                     map: map,
+                                                     clickable: false,
+                                                     zIndex: 500,
+  });
+  marker.setMap(map);
+  marker1.setMap(map);
+}
+</script>
+
+<script src="https://maps.googleapis.com/maps/api/js?callback=myMap"></script>
+<!-- RUN THIS EXAMPLE ON W3SCHOOLS ;) https://www.vectorizer.io/ for png to SVG convertion
+To use this code on your website, get a free API key from Google.
+Read more at: https://www.w3schools.com/graphics/google_maps_basic.asp
+-->
+
+</body>
+</html>

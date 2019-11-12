@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Showing/Hiding overlays</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+	  
+	  .wrapper {
+		display: grid;
+		grid-gap: 10px;
+		grid-template-columns: 100px 100px 100px;
+		background-color: #fff;
+		color: #444;
+	}
+
+    </style>
+    <script 
+src="https://maps.googleapis.com/maps/api/js?"></script>
+    <script>
+      // This example adds hide() and show() methods to a custom overlay's prototype.
+      // These methods toggle the visibility of the container <div>.
+      // Additionally, we add a toggleDOM() method, which attaches or detaches the
+      // overlay to or from the map.
+
+      var overlay;
+
+      wpInfoOverlay.prototype = new google.maps.OverlayView();
+
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 11,
+          center: {lat: 12.323907, lng: 77.109291},
+          mapTypeId: 'satellite'
+        });
+
+        var bounds = new google.maps.LatLngBounds(
+            new google.maps.LatLng(12.97023, 77.643932),
+            new google.maps.LatLng(12.970471, 77.6608));
+
+        // The photograph is courtesy of the U.S. Geological Survey.
+        var srcImage = 'https://developers.google.com/maps/documentation/javascript/';
+        srcImage += 'examples/full/images/talkeetna.png';
+
+        overlay = new wpInfoOverlay(bounds, srcImage, map);
+      }
+
+      /** @constructor */
+      function wpInfoOverlay(bounds, image, map) {
+
+        // Now initialize all properties.
+        this.bounds_ = bounds;
+        this.image_ = image;
+        this.map_ = map;
+
+        // Define a property to hold the image's div. We'll
+        // actually create this div upon receipt of the onAdd()
+        // method so we'll leave it null for now.
+        this.div_ = null;
+
+        // Explicitly call setMap on this overlay
+        this.setMap(map);
+      }
+
+      /**
+       * onAdd is called when the map's panes are ready and the overlay has been
+       * added to the map.
+       */
+      wpInfoOverlay.prototype.onAdd = function() {
+
+        var div = document.createElement('div');
+		div.class = "wrapper"; 
+		div.style.width = '100%';
+        div.style.height = '100%';
+        div.style.border = 'solid black';
+        div.style.borderWidth = '2px';
+        div.style.position = 'absolute';
+
+        /*/ Create the img element and attach it to the div.
+        var img = document.createElement('img');
+        img.src = this.image_;
+        img.style.width = '50%';
+        img.style.height = '50%';
+        div.appendChild(img);*/
+		
+		var latLbl = document.createElement('Label');
+		latLbl.innerHTML = "Latitude";
+		latLbl.style.width = '35px';
+        latLbl.style.height = '15px';
+		div.appendChild(latLbl);
+		
+		var latInp = document.createElement('input');
+		latInp.id = 'latInp';
+		latInp.type = 'text';
+		latInp.style.width = '35px';
+        latInp.style.height = '15px';
+		div.appendChild(latInp);
+		
+	    var lngLbl = document.createElement('Label');
+		lngLbl.innerHTML = "Longitude";
+		lngLbl.style.y = '15px';
+		lngLbl.style.width = '35px';
+        lngLbl.style.height = '15px';
+		div.appendChild(lngLbl);
+		
+		var lngInp = document.createElement('input');
+		lngInp.id = 'lngInp';
+		lngInp.type = 'text';
+		lngInp.style.width = '35px';
+        lngInp.style.height = '15px';
+		div.appendChild(lngInp);
+		
+		var submitBtn = document.createElement('input');
+		submitBtn.type = 'submit';
+		submitBtn.style.width = '55px';
+        submitBtn.style.height = '20px';
+		submitBtn.onclick = function(event) {
+			console.log("i got click " +
+				document.getElementById('latInp').value
+			);
+            overlay.hide();
+        }
+		div.appendChild(submitBtn);
+		
+		/*var cancelButton = document.createElement('input');
+		inputItem.style.width = '10%';
+        inputItem.style.height = '10%';
+        cancelButton.type = 'submit';
+        cancelButton.id = 'cancelButton';
+        cancelButton.value = 'Cancel';
+        cancelButton.style.cssText += 'font-size:' + m_fontSize + 'px' +
+               ';background-color:white;color:black;border-radius:4px;';
+        cancelButton.onclick = function(event) {
+                            $this.hide();
+        }
+		div.appendChild(cancelButton);
+		var parameterInput = document.createElement('input');
+                parameterInput.type = 'text';
+                parameterInput.id = 'ParameterInput';
+                parameterInput.name = 'loiter';
+                parameterInput.style.cssText += 'font-family' +
+                m_fontFamily + ';font-size:' + m_fontSize + 'px' +
+                ';background-color:transparent;color:white;width:30%; \
+                        margin-left:6px;border-radius:5px;';
+					div.appendChild(parameterInput);	*/
+
+        this.div_ = div;
+
+        // Add the element to the "overlayImage" pane.
+        var panes = this.getPanes();
+        panes.overlayImage.appendChild(this.div_);
+      };
+
+      wpInfoOverlay.prototype.draw = function() {
+
+        // We use the south-west and north-east
+        // coordinates of the overlay to peg it to the correct position and size.
+        // To do this, we need to retrieve the projection from the overlay.
+        var overlayProjection = this.getProjection();
+
+        // Retrieve the south-west and north-east coordinates of this overlay
+        // in LatLngs and convert them to pixel coordinates.
+        // We'll use these coordinates to resize the div.
+        var sw = overlayProjection.fromLatLngToDivPixel(this.bounds_.getSouthWest());
+        var ne = overlayProjection.fromLatLngToDivPixel(this.bounds_.getNorthEast());
+
+        // Resize the image's div to fit the indicated dimensions.
+        var div = this.div_;
+        div.style.left = sw.x + 'px';
+        div.style.top = ne.y + 'px';
+        div.style.width = (ne.x - sw.x) + 'px';
+        div.style.height = (sw.y - ne.y) + 'px';
+      };
+
+      wpInfoOverlay.prototype.onRemove = function() {
+        this.div_.parentNode.removeChild(this.div_);
+      };
+
+      // Set the visibility to 'hidden' or 'visible'.
+      wpInfoOverlay.prototype.hide = function() {
+        if (this.div_) {
+          // The visibility property must be a string enclosed in quotes.
+          this.div_.style.visibility = 'hidden';
+        }
+      };
+
+      wpInfoOverlay.prototype.show = function() {
+        if (this.div_) {
+          this.div_.style.visibility = 'visible';
+        }
+      };
+
+      wpInfoOverlay.prototype.toggle = function() {
+        if (this.div_) {
+          if (this.div_.style.visibility === 'hidden') {
+            this.show();
+          } else {
+            this.hide();
+          }
+        }
+      };
+
+      // Detach the map from the DOM via toggleDOM().
+      // Note that if we later reattach the map, it will be visible again,
+      // because the containing <div> is recreated in the overlay's onAdd() method.
+      wpInfoOverlay.prototype.toggleDOM = function() {
+        if (this.getMap()) {
+          // Note: setMap(null) calls OverlayView.onRemove()
+          this.setMap(null);
+        } else {
+          this.setMap(this.map_);
+        }
+      };
+
+      google.maps.event.addDomListener(window, 'load', initMap);
+    </script>
+  </head>
+  <body>
+<!-- Add an input button to initiate the toggle method on the overlay. -->
+    <div id="floating-panel">
+      <input type="button" value="Toggle visibility" onclick="overlay.toggle();"></input>
+      <input type="button" value="Toggle DOM attachment" onclick="overlay.toggleDOM();"></input>
+    </div>
+    <div id="map"></div>
+  </body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<style>
+body {
+    background-color: lightblue;
+}
+
+h1 {
+    color: white;
+    text-align: center;
+}
+
+p {
+    font-family: verdana;
+    font-size: 20px;
+}
+</style>
+</head>
+
+<script>
+
+function getClickBtn(imgSrc) {
+    var btn = document.createElement('input');
+    btn.src = imgSrc;
+    btn.type = "image";
+    btn.alt = "Submit";
+    btn.style.height = 25;
+    btn.style.width = 25;
+    btn.style.zIndex = "2";
+
+    return btn;
+}
+
+window.onload = function() {
+	console.log("i got call");  
+    var btn = getClickBtn("submit.gif");
+    document.getElementById('myDiv').appendChild(btn);
+    
+    btn.onclick =  function(e) {
+               console.log("i got click");  
+    }
+};
+
+</script>
+
+<body>
+
+<!--will work on https://www.w3schools.com/tags/tryit.asp?filename=tryhtml_input_alt -->
+<form id="myDiv" action="/action_page.php" > 
+</form>
+
+<p>Click on the image, and the input will be sent to a page on the server called "/action_page.php".</p>
+<p><b>Note:</b> The image input type sends the X and Y coordinates of the click that activated the image button as default.</p>
+
+</body>
+</html>

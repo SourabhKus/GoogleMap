@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h1>Lines on Map</h1>
+
+<div id="googleMap" style="width:100%;height:700px;"></div>
+
+<script>
+	var map, setArrows;
+    
+	// returns rotated Arrow icon object
+	function getArrowIcon(angle) {
+    	var icon;
+        var canvas = document.createElement("canvas");
+		var context = canvas.getContext("2d");
+		canvas.height = 22;
+		canvas.width = canvas.height;
+
+		context.beginPath();
+		context.strokeStyle = "#0000ff";
+		context.lineWidth = 3;
+
+		context.translate(canvas.width*0.5, canvas.height*0.5);
+		context.rotate((180+parseInt(angle))*Math.PI/180);
+
+		context.moveTo(-10, -6);
+		context.lineTo(0, 6);
+		context.lineTo(10, -6);
+        
+        context.stroke();
+    
+    	icon = {
+        	anchor: new google.maps.Point(canvas.width*0.5, canvas.width*0.5),
+        	url: canvas.toDataURL()
+    	};
+
+    	return icon;
+	}
+
+	function initializeArrowhandler() {
+		// Extends OverlayView from the Maps API
+		ArrowHandler.prototype = new google.maps.OverlayView();
+
+		// Draw is inter alia called on zoom change events.
+		// So we can use the draw method as zoom change listener
+		ArrowHandler.prototype.draw = function() {
+			if (this.arrowheads.length > 0) {
+				for (var i = 0, m; m = this.arrowheads[i]; i++) {
+					m.setOptions({ position: this.usePixelOffset(m.p1, m.p2) });
+				}
+			}
+		};
+
+		// Computes the length of a polyline in pixels
+		// to adjust the position of the 'head' arrow
+		ArrowHandler.prototype.usePixelOffset = function(p1, p2) {
+			var proj = this.getProjection();
+			var dist = 6; // 1/3 size of triangle icon
+			var pix1 = proj.fromLatLngToContainerPixel(p1);
+			var pix2 = proj.fromLatLngToContainerPixel(p2);
+			var vector = new google.maps.Point(pix2.x - pix1.x, pix2.y - pix1.y);
+			var length = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+			var normal = new google.maps.Point(vector.x/length, vector.y/length);
+			var offset = new google.maps.Point(pix2.x - dist * normal.x, pix2.y - dist * normal.y);
+
+			return proj.fromContainerPixelToLatLng(offset);
+		};
+
+		// Creates markers with corresponding triangle icons
+		ArrowHandler.prototype.create = function(p1, p2, mode) {
+			var markerpos;
+			var g = google.maps;
+			if (mode == "onset") 
+				markerpos = p1;
+			else if (mode == "head") 
+				markerpos = this.usePixelOffset(p1, p2);
+			else if (mode == "midline") 
+				markerpos = google.maps.geometry.spherical.interpolate(p1, p2, .5);
+
+			// Compute the bearing of the line in degrees
+			var angle = google.maps.geometry.spherical.computeHeading(p1, p2).toFixed(1);
+			var marker = new google.maps.Marker({
+				position: markerpos,
+				map: map, 
+                icon: getArrowIcon(angle), 
+                clickable: false
+			});
+		
+			if (mode == "head") {
+				// Store markers with 'head' arrows to adjust their offset position on zoom change
+				marker.p1 = p1;
+				marker.p2 = p2;
+				//marker.setValues({ p1: p1, p2: p2 });
+				this.arrowheads.push(marker);
+			}
+		};
+
+		ArrowHandler.prototype.load = function (points, mode) {
+			for (var i = 0; i < points.length-1; i++) {
+				var p1 = points[i],
+				p2 = points[i + 1];
+				this.create(p1, p2, mode); 
+			}
+		};
+
+	}
+
+	function ArrowHandler() {
+		this.setMap(map);
+		// Markers with 'head' arrows must be stored
+		this.arrowheads = [];
+	}
+
+	// Draws a polyline with accordant arrow heads
+	function createPoly(path, mode) {
+		var poly = new google.maps.Polyline({
+			strokeColor: "#0000ff",
+			strokeOpacity: 0.8,
+			strokeWeight: 3,
+			map: map,
+			path: path 
+		});
+	
+		setArrows.load(path, mode);
+		return poly;
+	}
+
+	// Create the map
+	function createMap() {
+		var center = new google.maps.LatLng(43.35,-79.67);
+		var opts_map = {
+			center: center,
+			zoom: 10,
+			streetViewControl: false,
+			mapTypeId: "roadmap"
+		};
+   
+		map = new google.maps.Map(document.getElementById("googleMap"), opts_map);
+   
+		initializeArrowhandler();
+		setArrows = new ArrowHandler();
+    
+		var points = [
+			new google.maps.LatLng(43.36, -80.00),
+			new google.maps.LatLng(43.29,-79.83),
+			new google.maps.LatLng(43.35,-79.52),
+			new google.maps.LatLng(43.20,-79.31),
+			new google.maps.LatLng(43.30,-79.08)
+		];
+  
+		createPoly(points, "onset");
+   
+		var points2 = [
+			new google.maps.LatLng(43.26, -80.15),
+			new google.maps.LatLng(43.19,-79.98),
+			new google.maps.LatLng(43.25,-79.67),
+			new google.maps.LatLng(43.10,-79.46),
+			new google.maps.LatLng(43.20,-79.23)
+		]; 
+  
+		createPoly(points2, "midline");
+
+		var points3 = [
+			new google.maps.LatLng(43.477,-79.7),
+			new google.maps.LatLng(43.55,-79.60),
+			new google.maps.LatLng(43.642,-79.73),
+			new google.maps.LatLng(43.51,-79.95)
+		];
+
+		google.maps.event.addListenerOnce(map, "tilesloaded", function() {
+			createPoly(points3, "head");
+		});
+	};
+    
+</script>
+
+<script 
+src="https://maps.googleapis.com/maps/api/js?callback=createMap"></script>
+
+</body>
+</html>
